@@ -1,0 +1,384 @@
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>The World of Vostoynov</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<script type="text/javascript">
+			var dx;
+			var dy;
+			var img;
+			var img2;
+			
+			var x;
+			var y;
+			
+			var xDist = [0, 0];
+			var yDist = [0, 0];
+			
+			var message = "";
+			
+			var mapDistance = false;
+			var numClicks = 0;
+			var isOpen = false;
+			
+			var tooltip;
+			
+			var data = [
+						{x:97.35, y:43.21, name:"Cavdia"},
+						{x:91.65, y:43.05, name:"Teremivsk"},
+						{x:92.70, y:62.91, name:"Orașânge"},
+						{x:87.56, y:67.22, name:"Stalolisz"},
+						{x:87.80, y:78.31, name:"Telesari"},
+						{x:83.63, y:75.00, name:"Somutov"},
+						{x:82.83, y:82.95, name:"Bălcovăț"},
+						{x:78.65, y:60.93, name:"Pieškov"},
+						{x:81.22, y:66.23, name:"Bistrizia"},
+						{x:78.33, y:73.84, name:"Katom"},
+						{x:77.13, y:87.42, name:"Revúca"},
+						{x:73.19, y:77.65, name:"Piavița"},
+						{x:71.03, y:65.56, name:"Vicoreni"},
+						{x:72.71, y:52.15, name:"Derești"},
+						{x:68.14, y:55.96, name:"Sulilui"},
+						{x:60.75, y:74.01, name:"Krastok"},
+						{x:56.42, y:78.31, name:"Călisna"},
+						{x:56.58, y:69.70, name:"Ilabinov"},
+						{x:58.75, y:61.09, name:"Vrazinok"},
+						{x:52.41, y:43.54, name:"Skašov"},
+						{x:47.91, y:51.32, name:"Dolhaței"},
+						{x:49.36, y:74.34, name:"Comarreni"},
+						{x:31.70, y:63.41, name:"Poartă"},
+						{x:14.93, y:91.89, name:"Sa'dakalla"},
+						{x:8.35, y:81.13, name:"Armasuf"},
+						{x:55.62, y:31.62, name:"Asatoro"},
+						{x:50.00, y:25.33, name:"Hi no Chikara"},
+						{x:41.17, y:32.45, name:"Ranyama"},
+						{x:44.54, y:13.25, name:"Funahoro"},
+						{x:37.56, y:8.11, name:"Mizu no Ochitsuki"},
+						{x:35.71, y:23.18, name:"Tenrai Kokka"},
+						{x:32.91, y:41.06, name:"Kaze no Ikari"},
+						{x:28.09, y:1.82, name:"Kyougoku"},
+						{x:24.64, y:17.05, name:"Entoro"},
+						{x:24.40, y:27.98, name:"Chikyū no Hinansho"},
+						{x:24.64, y:39.07, name:"Yugasato"},
+						{x:20.55, y:49.17, name:"Okutoro"},
+						{x:14.61, y:44.37, name:"Shikawa"},
+						{x:6.34, y:31.62, name:"Hashikko"},
+						
+						{x:51.56, y:61.45, name:"Bucera"},
+						{x:42.38, y:63.10, name:"Mogu"},
+						{x:37.83, y:50.25, name:"Durica"},
+						{x:51.00, y:35.91, name:"Hontori"},
+						{x:23.46, y:10.38, name:"Shingata"},
+						{x:15.56, y:32.45, name:"Souhaba"},
+						{x:5.35, y:94.07, name:"Al Artahyan"}
+						];
+						
+			// +- 0.75 in x
+			// +- 2.5 in y
+			
+			function setupEvents()
+			{
+				img = document.getElementById('mapNames');
+				img2 = document.getElementById('dragonHolder');
+				
+				img.addEventListener('mousemove', displayData, false);
+				img.addEventListener('click', gatherPoints, false);
+				img2.addEventListener('mousemove', displayData, false);
+				img2.addEventListener('click', gatherPoints, false);
+				
+				tooltip = document.getElementById("towntooltip");
+				window.addEventListener("resize", sizing, false);
+			}
+			
+			function testing()
+			{
+				//console.log(message);
+				if (!mapDistance && !isOpen)
+				{
+					mapDistance = true;
+					document.body.style.cursor = "crosshair";
+				}
+			}
+			
+			
+			function gatherPoints(evt)
+			{
+				dx = img.clientWidth;
+				dy = img.clientHeight;
+				x = parseFloat(evt.clientX*100/dx).toFixed(2);
+				y = parseFloat(evt.clientY*100/dy).toFixed(2);
+				
+				if (!mapDistance)
+				{
+					message += "{x:" + x + ", y:" + y + "},\n";
+				}
+				else
+				{
+					xDist[numClicks] = evt.clientX;
+					yDist[numClicks] = evt.clientY;
+					numClicks++;
+				}
+				
+				if (numClicks == 2 && !isOpen)
+				{
+					var a = Math.sqrt(Math.pow((xDist[1] - xDist[0]),2) + Math.pow((yDist[1] - yDist[0]),2))
+										
+					var b = a * (1000/(dx * 0.179)); // distance in km
+					var c = parseFloat(b * 0.62).toFixed(2); // distance in miles
+					b = parseFloat(b).toFixed(2);
+					
+					isOpen = true;
+					//alert(b + "km, " + c + "miles");
+					document.getElementsByClassName("alert")[0].style.display = "inline";
+					
+					var navMessage = b + "km, " + c + "miles.<br>";
+					navMessage += "Walking time: ~" + parseFloat(c/24).toFixed(2) + " days.<br>";
+					navMessage += "Marching time: ~" + parseFloat(c/30).toFixed(2) + " days.<br>";
+					navMessage += "Wagon time: ~" + parseFloat(c/50).toFixed(2) + " days.<br>";
+					navMessage += "Riding time: ~" + parseFloat(c/64).toFixed(2) + " days.<br>";
+					document.getElementById("alertMessage").innerHTML = navMessage;
+					
+					mapDistance = false;
+					document.body.style.cursor = "default";
+					numClicks = 0;
+				}
+					
+			}
+			
+			function sizing(evt)
+			{
+				dx = img.clientWidth;
+				dy = img.clientHeight;
+				
+				holder = document.getElementById("dragonHolder");
+				holder.style.height = dy;
+				holder.style.width = dx;
+				
+				var banner1 = document.getElementById("banner1");
+				banner1.style.left = (dx*0.51) + "px";
+				banner1.style.top = (dy*0.09) + "px";
+				banner1.style.height = (dy*0.1) + "px";
+				banner1.style.width = (dx*0.24) + "px";
+				
+				var banner2 = document.getElementById("banner2");
+				banner2.style.left = (dx*0.55) + "px";
+				banner2.style.top = (dy*0.88) + "px";
+				banner2.style.height = (dy*0.1) + "px";
+				banner2.style.width = (dx*0.21) + "px";
+				
+				var banner3 = document.getElementById("banner3");
+				banner3.style.left = (dx*0.12) + "px";
+				banner3.style.top = (dy*0.72) + "px";
+				banner3.style.height = (dy*0.1) + "px";
+				banner3.style.width = (dx*0.14) + "px";
+				
+				var banner4 = document.getElementById("banner4");
+				banner4.style.left = (dx*0.29) + "px";
+				banner4.style.top = (dy*0.84) + "px";
+				banner4.style.height = (dy*0.1) + "px";
+				banner4.style.width = (dx*0.2) + "px";
+				
+				var mapButton = document.getElementById("mapButton");
+				mapButton.style.left = (dx*0.83) + "px";
+				mapButton.style.top = (dy*0.10) + "px";
+				mapButton.style.height = (dy*0.15) + "px";
+				
+				var navAlert = document.getElementsByClassName("alert")[0];
+				navAlert.style.left = (dx*0.4) + "px";
+				navAlert.style.top = (dy*0.4) + "px";
+				navAlert.style.height = (dy*0.2) + "px";
+				navAlert.style.width = (dx*0.2) + "px";
+				
+				var dragon = document.getElementById("dragon");
+				dragon.style.left = (dx*0.55) + "px";
+				dragon.style.top = (dy*0.35) + "px";
+				dragon.style.height = (dy*0.1) + "px";
+				dragon.style.width = (dx*0.05) + "px";
+				
+				var kraken = document.getElementById("kraken");
+				kraken.style.left = (dx*0.7) + "px";
+				kraken.style.top = (dy*0.23) + "px";
+				kraken.style.height = (dy*0.2) + "px";
+				
+			}
+			
+			function displayData(evt)
+			{
+				dx = img.clientWidth;
+				dy = img.clientHeight;
+				x = parseFloat(evt.clientX*100/dx).toFixed(2);
+				y = parseFloat(evt.clientY*100/dy).toFixed(2);
+				
+				//tooltip.style.visibility = "hidden";
+				tooltip.style.opacity = 0;
+				//tooltip.style.display = "none";
+								
+				for (var i = 0; i < data.length; i++)
+				{
+					if (x < data[i].x+0.75 && x > data[i].x-0.75 && y < data[i].y+2.5 && y > data[i].y-2.5)
+					{
+						//tooltip.style.display = "inline-block";
+						tooltip.style.visibility = "visible";
+						tooltip.style.opacity = 1;
+						tooltip.innerHTML = data[i].name;
+					}
+				}	
+
+				tooltip.style.left = (evt.pageX - (tooltip.clientWidth + 10)) + 'px';
+				tooltip.style.top = (evt.pageY - (tooltip.clientHeight + 5)) + 'px';
+				
+				if (parseInt(tooltip.style.left) <= 0)
+				{
+					tooltip.style.left = '0px';
+				}
+				if (parseInt(tooltip.style.top) <= 0)
+				{
+					tooltip.style.top = '0px';
+				}
+					
+				
+				//document.getElementById("test").innerHTML = evt.clientX + ", " + evt.clientY + ", " + dx + ", " + dy;
+				//document.getElementById("test").innerHTML = x + ", " + y + ", " + dx + ", " + dy;
+				//document.getElementById("test").innerHTML = parseInt(tooltip.style.left);
+			}
+			
+		</script>
+		
+		<style type="text/css">
+			html, body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			
+			#dragonHolder {
+				position: absolute;
+			}
+
+			.mapClass {
+				padding: 0;
+				display: block;
+				max-height: 100%;
+				max-width: 100%;
+				position: absolute;
+			}
+			
+			#dragon {
+				position: absolute;
+				animation-name: flight;
+				animation-duration: 6s;
+				animation-iteration-count: infinite;
+				animation-timing-function: linear;
+			}
+			
+			@keyframes flight {
+				0%   {left:55.22%; top:35.35%;}
+				10%   {left:50.11%; top:32.88%;}
+				20%   {left:46.92%; top:38.48%;}
+				30%   {left:42.37%; top:39.80%;}
+				40%   {transform:scaleX(1); left:36.47%; top:37.33%;}
+				50%   {transform:scaleX(-1); left:29.21%; top:43.09%;}
+				60%   {left:36.47%; top:37.33%;}
+				70%   {left:42.37%; top:39.80%;}
+				80%   {left:46.92%; top:38.48%;}
+				90%   {transform:scaleX(-1); left:50.11%; top:32.88%;}
+				100%	{transform:scaleX(1); left:55.22%; top:35.35%;}
+			}
+			
+			#kraken {
+				position: absolute;
+			}
+				
+			#towntooltip {
+				display: inline-block;
+				
+				visibility: hidden;
+				opacity: 0;
+				transition: visibility 0s, opacity 0.5s linear;
+				
+				background-image: url("tooltip.jpg");
+				background-size: 100% 100%;
+				padding: 10px;
+				position: absolute;
+				z-index: 1000;
+				width: auto;
+				height: auto;
+			}
+			
+			/*p {
+			color:white;
+				position: absolute;
+				top: 80%;
+				left: 20%;
+			}*/
+			
+			.realms {
+				padding: 0;
+				display: block;
+				position: absolute;
+				filter: sepia(100%);
+			}
+			
+			#mapButton {
+				position:absolute;
+			}
+			
+			button {
+				position: absolute;
+			}
+			
+			.alert {
+				display: none;
+				position: absolute;
+				padding: 20px;
+				background-image: url("tooltip.jpg");
+				background-size: 100% 100%;
+			}
+
+			.closebtn {
+				margin-left: 15px;
+				font-weight: bold;
+				float: right;
+				font-size: 22px;
+				line-height: 20px;
+				cursor: pointer;
+				transition: 0.3s;
+			}
+
+			.closebtn:hover {
+				color: white;
+			}
+			
+			
+	</style>
+	</head>
+
+	<body onload="setupEvents(); sizing()">	
+		<span id="towntooltip"></span>
+		
+		<img class="mapClass" id="map" src="map.png">
+		
+		<img class="realms" id="banner1" src="banner.gif">
+		<img class="realms" id="banner2" src="banner.gif">
+		<img class="realms" id="banner3" src="banner.gif">
+		<img class="realms" id="banner4" src="banner.gif">
+		
+		<img class="mapClass" id="mapNames" src="map_text.png">		
+		<img id="kraken" src="kraken.gif">
+		
+		<div id="dragonHolder">
+			<img id="dragon" src="dragon.gif">
+		</div>
+		
+		<input title="Distance Planner" id="mapButton" type="image" src="navigate.png" onclick="testing()"/>
+		<!--<button type="button" onclick="testing()">Navigation</button>-->
+		<p id="test"></p>
+		<div class="alert">
+			<span class="closebtn" onclick="this.parentElement.style.display='none'; isOpen = false">&times;</span> 
+			<p id="alertMessage"></p>
+		</div>
+	</body>
+	
+	
+</html>
